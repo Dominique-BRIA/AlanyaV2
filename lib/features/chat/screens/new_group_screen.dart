@@ -91,82 +91,150 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: AppColors.sand,
       appBar: backAppBar(context, "Nouveau groupe"),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: AppColors.terracotta))
           : Column(
               children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: TextField(
-                    controller: _nameCtrl,
-                    decoration: const InputDecoration(
-                      labelText: "Nom du groupe",
-                      prefixIcon: Icon(Icons.groups),
-                    ),
-                  ),
-                ),
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(_error!, style: const TextStyle(color: Colors.red)),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                  child: Row(
+                // Section Nom du Groupe
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Contacts (${_selected.length} sélectionné${_selected.length > 1 ? "s" : ""})",
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        "Nom du groupe",
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: AppColors.chocolate,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _nameCtrl,
+                        decoration: InputDecoration(
+                          hintText: "ex: Famille, Travail...",
+                          prefixIcon: const Icon(Icons.groups_outlined, color: AppColors.terracotta),
+                          filled: true,
+                          fillColor: AppColors.surface,
+                        ),
+                      ),
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 12)),
+                        ),
+                    ],
+                  ),
+                ),
+                // Section Sélection Contacts
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Sélectionner des contacts",
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.terracotta.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          "${_selected.length} sélectionné${_selected.length > 1 ? "s" : ""}",
+                          style: const TextStyle(
+                            color: AppColors.terracotta,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Expanded(
                   child: _contacts.isEmpty
-                      ? const Center(
+                      ? Center(
                           child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text(
-                              "Aucun contact.\nAjoute des contacts avant de créer un groupe.",
-                              textAlign: TextAlign.center,
-                              style: TextStyle(color: Colors.black54),
+                            padding: const EdgeInsets.all(32),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.person_search_outlined, size: 64, color: AppColors.outline),
+                                const SizedBox(height: 16),
+                                Text(
+                                  "Aucun contact disponible.\nAjoutez des contacts pour créer un groupe.",
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ],
                             ),
                           ),
                         )
                       : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           itemCount: _contacts.length,
                           itemBuilder: (_, i) {
                             final c = _contacts[i];
                             final checked = _selected.contains(c.publicNumber);
-                            return CheckboxListTile(
-                              value: checked,
-                              onChanged: (v) {
-                                setState(() {
-                                  if (v == true) {
-                                    _selected.add(c.publicNumber);
-                                  } else {
-                                    _selected.remove(c.publicNumber);
-                                  }
-                                });
-                              },
-                              title: Text(c.displayName),
-                              subtitle: Text("Numéro : ${c.publicNumber}"),
-                              secondary: CircleAvatar(
-                                backgroundColor: AppColors.clay,
-                                child: Text(
-                                  c.displayName.isNotEmpty ? c.displayName[0].toUpperCase() : "?",
-                                  style: const TextStyle(color: Colors.white),
+                            return Container(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              decoration: BoxDecoration(
+                                color: checked ? AppColors.terracotta.withOpacity(0.05) : AppColors.surface,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: checked ? AppColors.terracotta : AppColors.outline,
+                                  width: checked ? 1.5 : 1,
+                                ),
+                              ),
+                              child: ListTile(
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                                leading: CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: checked ? AppColors.terracotta : AppColors.clay,
+                                  child: Text(
+                                    c.displayName.isNotEmpty ? c.displayName[0].toUpperCase() : "?",
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                title: Text(
+                                  c.displayName,
+                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                ),
+                                subtitle: Text(c.publicNumber, style: const TextStyle(fontSize: 12)),
+                                trailing: Transform.scale(
+                                  scale: 0.9,
+                                  child: Checkbox(
+                                    value: checked,
+                                    activeColor: AppColors.terracotta,
+                                    checkColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                    onChanged: (v) {
+                                      setState(() {
+                                        if (v == true) {
+                                          _selected.add(c.publicNumber);
+                                        } else {
+                                          _selected.remove(c.publicNumber);
+                                        }
+                                      });
+                                    },
+                                  ),
                                 ),
                               ),
                             );
                           },
                         ),
                 ),
+                // Bouton Action Flottant / Fixe
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(24),
                     child: SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -177,8 +245,8 @@ class _NewGroupScreenState extends State<NewGroupScreen> {
                                 height: 18,
                                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                               )
-                            : const Icon(Icons.check),
-                        label: const Text("Créer le groupe"),
+                            : const Icon(Icons.group_add_rounded),
+                        label: const Text("Créer le groupe", style: TextStyle(fontSize: 16)),
                       ),
                     ),
                   ),

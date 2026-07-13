@@ -32,7 +32,7 @@ class MessageMedia {
 class ReplyPreview {
   final String id;
   final String senderId;
-  final String type;
+  final int type;
   final String? content;
   final bool isDeleted;
 
@@ -47,7 +47,7 @@ class ReplyPreview {
   factory ReplyPreview.fromJson(Map<String, dynamic> j) => ReplyPreview(
         id: j["id"] as String,
         senderId: j["senderId"] as String,
-        type: j["type"] as String? ?? "TEXT",
+        type: (j["type"] as num).toInt(),
         content: j["content"] as String?,
         isDeleted: j["isDeleted"] as bool? ?? false,
       );
@@ -58,13 +58,15 @@ class Message {
   final String convId;
   final String senderId;
   final String? content;
-  final String type; // TEXT, IMAGE, FILE, AUDIO, VIDEO
-  final String status; // SENT, DELIVERED, READ
+  final int type; // 1: TEXT, 2: IMAGE, 3: AUDIO, 4: VIDEO, 5: FILE
+  final int status; // 1: SENT, 2: DELIVERED, 3: READ
   final String? replyToId;
   final ReplyPreview? replyTo; // snapshot du message cité (venant du backend)
-  final DateTime? deletedAt; // non-null = message supprimé pour tous
-  final List<MessageMedia> media;
-  final DateTime createdAt;
+  final bool isDeleted; // Vrai si supprimé pour l'utilisateur courant
+  final String? mediaUrl;
+  final String? mediaName;
+  final int? mediaDuration;
+  final DateTime sendAt;
 
   Message({
     required this.id,
@@ -74,30 +76,29 @@ class Message {
     required this.type,
     required this.status,
     required this.replyToId,
-    required this.media,
-    required this.createdAt,
-    this.deletedAt,
+    required this.isDeleted,
+    required this.sendAt,
     this.replyTo,
+    this.mediaUrl,
+    this.mediaName,
+    this.mediaDuration,
   });
-
-  /// Vrai si le message a été supprimé pour tout le monde.
-  bool get isDeleted => deletedAt != null;
 
   factory Message.fromJson(Map<String, dynamic> j) => Message(
         id: j["id"] as String,
         convId: j["convId"] as String,
         senderId: j["senderId"] as String,
         content: j["content"] as String?,
-        type: j["type"] as String,
-        status: (j["status"] as String?) ?? "SENT",
+        type: (j["type"] as num).toInt(),
+        status: (j["status"] as num).toInt(),
         replyToId: j["replyToId"] as String?,
         replyTo: j["replyTo"] != null
             ? ReplyPreview.fromJson(j["replyTo"] as Map<String, dynamic>)
             : null,
-        deletedAt: j["deletedAt"] != null ? DateTime.tryParse(j["deletedAt"] as String) : null,
-        media: ((j["media"] as List?) ?? [])
-            .map((m) => MessageMedia.fromJson(m as Map<String, dynamic>))
-            .toList(),
-        createdAt: DateTime.parse(j["createdAt"] as String),
+        isDeleted: (j["isDeleted"] as bool?) ?? false,
+        mediaUrl: j["mediaUrl"] as String?,
+        mediaName: j["mediaName"] as String?,
+        mediaDuration: (j["mediaDuration"] as num?)?.toInt(),
+        sendAt: DateTime.parse(j["sendAt"] as String),
       );
 }

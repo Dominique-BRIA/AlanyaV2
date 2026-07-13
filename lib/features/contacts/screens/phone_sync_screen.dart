@@ -149,7 +149,7 @@ class _PhoneSyncScreenState extends State<PhoneSyncScreen> {
         return _messageView(
           icon: Icons.search_off,
           title: "Aucun numéro Alanya détecté",
-          subtitle: "Aucun de tes contacts n'a de numéro à 6 chiffres dans son profil.\nLes numéros Alanya sont des numéros à 6 ou 8 chiffres (ex: 123456 ou 12345678).",
+          subtitle: "Aucun de tes contacts n'a de numéro à 8 chiffres dans son profil.\nLes numéros Alanya sont des numéros à 8 chiffres (ex: 12345678).",
           action: _retryButton(),
         );
       case PhoneSyncStatus.noMatches:
@@ -194,17 +194,17 @@ class _PhoneSyncScreenState extends State<PhoneSyncScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 12),
-            const Text(
-              "Alanya va scanner ton répertoire téléphonique, extraire les numéros à 6 ou 8 chiffres et vérifier lesquels ont un compte.",
-              style: TextStyle(color: Colors.black54, height: 1.5),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Aucune donnée n'est stockée. Seuls les numéros à 6 ou 8 chiffres sont envoyés au serveur.",
-              style: TextStyle(color: Colors.black38, fontSize: 12, height: 1.5),
-              textAlign: TextAlign.center,
-            ),
+    const Text(
+      "Alanya va scanner ton répertoire téléphonique, extraire les numéros à 8 chiffres et vérifier lesquels ont un compte.",
+      style: TextStyle(color: Colors.black54, height: 1.5),
+      textAlign: TextAlign.center,
+    ),
+    const SizedBox(height: 8),
+    const Text(
+      "Aucune donnée n'est stockée. Seuls les numéros à 8 chiffres sont envoyés au serveur.",
+      style: TextStyle(color: Colors.black38, fontSize: 12, height: 1.5),
+      textAlign: TextAlign.center,
+    ),
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,

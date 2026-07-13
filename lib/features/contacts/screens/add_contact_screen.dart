@@ -11,8 +11,9 @@ import '../../chat/chat_repository.dart';
 import '../../chat/screens/chat_screen.dart';
 import '../contacts_repository.dart';
 
-/// Recherche par numéro Alanya (6 chiffres) puis ajout au répertoire.
+/// Recherche par numéro Alanya (8 chiffres) puis ajout au répertoire.
 class AddContactScreen extends StatefulWidget {
+
   const AddContactScreen({super.key});
 
   @override
@@ -35,9 +36,9 @@ class _AddContactScreenState extends State<AddContactScreen> {
 
   Future<void> _search() async {
     final number = _numberCtrl.text.trim();
-    final isValid = (number.length == 6 || number.length == 8) && RegExp(r'^(\d{6}|\d{8})$').hasMatch(number);
+    final isValid = number.length == 8 && RegExp(r'^\d{8}$').hasMatch(number);
     if (!isValid) {
-      setState(() => _error = "Entre un numéro Alanya valide (6 ou 8 chiffres)");
+      setState(() => _error = "Entre un numéro Alanya valide (8 chiffres)");
       return;
     }
     setState(() {
@@ -123,62 +124,77 @@ class _AddContactScreenState extends State<AddContactScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: backAppBar(context, "Ajouter un contact"),
+      backgroundColor: AppColors.sand,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.chocolate,
+        elevation: 0,
+        title: Text(
+          "Ajouter un contact",
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                "Numéro Alanya",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                "Chaque utilisateur a un numéro public à 6 ou 8 chiffres (comme un numéro de téléphone).",
-                style: TextStyle(color: Colors.black54),
-              ),
-              const SizedBox(height: 16),
+              // Introduction
               Row(
                 children: [
+                  const Icon(Icons.person_add_alt_1, color: AppColors.terracotta, size: 32),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: TextField(
-                      controller: _numberCtrl,
-                      keyboardType: TextInputType.number,
-                      maxLength: 8,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(
-                        labelText: "Numéro (6 ou 8 chiffres)",
-                        counterText: "",
-                        prefixIcon: Icon(Icons.tag),
-                      ),
-                      onSubmitted: (_) => _search(),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _loading ? null : _search,
-                      child: const Icon(Icons.search),
+                    child: Text(
+                      "Trouvez un utilisateur",
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
-              if (_error != null) ...[
-                const SizedBox(height: 8),
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              ],
-              if (_loading && _result == null)
-                const Padding(
-                  padding: EdgeInsets.only(top: 24),
-                  child: Center(child: CircularProgressIndicator(color: AppColors.terracotta)),
+              const SizedBox(height: 8),
+              Text(
+                "Saisissez le numéro public Alanya (8 chiffres) pour ajouter un ami à votre répertoire.",
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 24),
+              
+              // Champ Numéro
+              TextField(
+                controller: _numberCtrl,
+                keyboardType: TextInputType.number,
+                maxLength: 8,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: InputDecoration(
+                  labelText: "Numéro Alanya",
+                  hintText: "ex: 12345678",
+                  counterText: "",
+                  prefixIcon: const Icon(Icons.tag, color: AppColors.terracotta),
                 ),
+                onSubmitted: (_) => _search(),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: _loading ? null : _search,
+                  icon: _loading 
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.search),
+                  label: Text(_loading ? "Recherche..." : "Rechercher"),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13), textAlign: TextAlign.center),
+              ],
+              
               if (_result != null) ...[
-                const SizedBox(height: 20),
-                _resultCard(_result!),
+                const SizedBox(height: 32),
+                _buildResultCard(theme, _result!),
               ],
             ],
           ),
@@ -187,73 +203,85 @@ class _AddContactScreenState extends State<AddContactScreen> {
     );
   }
 
-  Widget _resultCard(UserSearchResult user) {
+  Widget _buildResultCard(ThemeData theme, UserSearchResult user) {
     final name = user.pseudo ?? "Utilisateur ${user.publicNumber}";
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppColors.sand),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.outline),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.chocolate.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: AppColors.clay,
-                  child: Text(
-                    name.isNotEmpty ? name[0].toUpperCase() : "?",
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-                      Text("Numéro : ${user.publicNumber}", style: const TextStyle(color: Colors.black54)),
-                      if (user.alreadyContact)
-                        const Text(
-                          "Déjà dans ton répertoire",
-                          style: TextStyle(color: AppColors.forest, fontSize: 12),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            if (!user.alreadyContact) ...[
-              const SizedBox(height: 16),
-              TextField(
-                controller: _aliasCtrl,
-                decoration: const InputDecoration(
-                  labelText: "Nom dans ton répertoire (optionnel)",
-                  hintText: "Ex. Marie, Papa, Collègue…",
-                  prefixIcon: Icon(Icons.badge_outlined),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              AvatarCircle(
+                name: name,
+                radius: 28,
+                backgroundColor: AppColors.clay,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Text("Numéro : ${user.publicNumber}", style: theme.textTheme.bodySmall),
+                    if (user.alreadyContact)
+                      Text(
+                        "Déjà dans vos contacts",
+                        style: const TextStyle(color: AppColors.forest, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
+                  ],
                 ),
               ),
             ],
-            const SizedBox(height: 16),
-            ElevatedButton(
+          ),
+          if (!user.alreadyContact) ...[
+            const SizedBox(height: 20),
+            TextField(
+              controller: _aliasCtrl,
+              decoration: InputDecoration(
+                labelText: "Nom personnalisé",
+                hintText: "ex: Marc Bureau",
+                prefixIcon: const Icon(Icons.edit_note, color: AppColors.terracotta),
+              ),
+            ),
+          ],
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 56,
+            child: ElevatedButton(
               onPressed: _loading
                   ? null
                   : () => user.alreadyContact ? _addAndChat(user) : _add(user),
-              child: Text(user.alreadyContact ? "Discuter" : "Ajouter au répertoire"),
+              child: Text(user.alreadyContact ? "Ouvrir la discussion" : "Ajouter au répertoire", style: const TextStyle(fontSize: 16)),
             ),
-            if (!user.alreadyContact) ...[
-              const SizedBox(height: 8),
-              OutlinedButton(
+          ),
+          if (!user.alreadyContact) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 56,
+              child: OutlinedButton(
                 onPressed: _loading ? null : () => _addAndChat(user),
                 child: const Text("Ajouter et discuter"),
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
-}
+
+  Widget _resultCard(UserSearchResult user) {
+    return _buildResultCard(Theme.of(context), user);
+  }

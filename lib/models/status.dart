@@ -8,6 +8,8 @@ class StatusItem {
   final DateTime expiresAt;
   final bool viewed;
   final int viewsCount;
+  final int likedBy; // Nombre de likes
+  final bool isLiked; // L'utilisateur courant a-t-il liké ?
 
   StatusItem({
     required this.id,
@@ -19,6 +21,8 @@ class StatusItem {
     required this.expiresAt,
     required this.viewed,
     required this.viewsCount,
+    required this.likedBy,
+    required this.isLiked,
   });
 
   factory StatusItem.fromJson(Map<String, dynamic> j) => StatusItem(
@@ -31,6 +35,8 @@ class StatusItem {
         expiresAt: DateTime.parse(j["expiresAt"] as String),
         viewed: (j["viewed"] as bool?) ?? false,
         viewsCount: (j["viewsCount"] as num?)?.toInt() ?? 0,
+        likedBy: (j["likedBy"] as num?)?.toInt() ?? 0,
+        isLiked: (j["isLiked"] as bool?) ?? false,
       );
 }
 

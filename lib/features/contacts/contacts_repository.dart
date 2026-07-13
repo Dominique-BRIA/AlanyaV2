@@ -6,13 +6,13 @@ class ContactsRepository {
   ContactsRepository(this._api);
   final AuthedApi _api;
 
-  /// Recherche un utilisateur par son numéro Alanya à 6 chiffres.
+  /// Recherche un utilisateur par son numéro Alanya.
   Future<UserSearchResult> searchByNumber(String number) async {
     final data = await _api.get("/api/users/search?number=$number");
     return UserSearchResult.fromJson(data);
   }
 
-  /// Envoie un tableau de numéros à 6 chiffres et renvoie ceux qui sont sur Alanya.
+  /// Envoie un tableau de numéros et renvoie ceux qui sont sur Alanya.
   /// Utilisé pour la synchronisation automatique du répertoire téléphonique.
   Future<List<UserSearchResult>> matchNumbers(List<String> numbers) async {
     if (numbers.isEmpty) return [];
@@ -34,10 +34,10 @@ class ContactsRepository {
         .toList();
   }
 
-  /// Ajoute un contact via son numéro Alanya à 6 chiffres.
-  Future<Contact> add(String publicNumber, {String? alias}) async {
+  /// Ajoute un contact via son numéro Alanya.
+  Future<Contact> add(String alanyaPhone, {String? alias}) async {
     final data = await _api.post("/api/contacts", {
-      "publicNumber": publicNumber,
+      "alanyaPhone": alanyaPhone,
       if (alias != null && alias.isNotEmpty) "alias": alias,
     });
     return Contact.fromJson(data);
@@ -45,11 +45,11 @@ class ContactsRepository {
 
   /// Ajoute plusieurs contacts en une seule passe (import répertoire téléphonique).
   /// Ignore silencieusement les doublons (code ALREADY_CONTACT).
-  Future<int> addMany(List<({String publicNumber, String? alias})> entries) async {
+  Future<int> addMany(List<({String alanyaPhone, String? alias})> entries) async {
     int added = 0;
     for (final e in entries) {
       try {
-        await add(e.publicNumber, alias: e.alias);
+        await add(e.alanyaPhone, alias: e.alias);
         added++;
       } on ApiException catch (ex) {
         if (ex.code == "ALREADY_CONTACT") continue; // déjà présent, on ignore

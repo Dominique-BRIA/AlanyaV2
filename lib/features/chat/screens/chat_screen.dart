@@ -543,11 +543,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   /// Construit l'aperçu du message cité (en haut de la bulle, style WhatsApp).
-  /// Utilise le snapshot du backend (m.replyTo) qui contient le contenu du message
-  /// original — fonctionne même si le message n'est plus chargé localement.
-  /// Cliquable : scroll vers le message original si celui-ci est dans la liste.
-  Widget _replyPreviewHeader(Message m, bool mine) {
-    // Résout le snapshot via le cache local (priorité), le serveur, ou la liste live.
+  Widget _replyPreviewHeader(Message m, bool mine, BorderRadius borderRadius) {
     final snapshot = _resolveReply(m);
     final original = _findMessage(m.replyToId);
     if (snapshot == null && original == null) return const SizedBox.shrink();
@@ -561,14 +557,14 @@ class _ChatScreenState extends State<ChatScreen> {
     return GestureDetector(
       onTap: canScroll ? () => _scrollToMessage(m.replyToId!) : null,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 6),
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: mine ? Colors.white.withOpacity(0.15) : AppColors.sand.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(8),
-          border: Border(left: BorderSide(color: barColor, width: 3)),
+          color: mine ? Colors.white.withOpacity(0.15) : AppColors.sand.withOpacity(0.6),
+          borderRadius: BorderRadius.circular(12),
+          border: Border(left: BorderSide(color: barColor, width: 4)),
         ),
-        constraints: const BoxConstraints(maxWidth: 220),
+        constraints: const BoxConstraints(maxWidth: 240),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -1137,15 +1133,13 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  /// AppBar personnalisée façon WhatsApp :
+  /// AppBar personnalisée Premium :
   /// [avatar][titre / statut clickable]  [📞][🎥]
-  ///
-  /// - Tap sur l'avatar → visualiseur plein écran
-  /// - Tap sur le nom → écran détails contact (uniquement pour DM)
   PreferredSizeWidget _whatsappAppBar() {
     return AppBar(
       backgroundColor: AppColors.terracotta,
       foregroundColor: Colors.white,
+      elevation: 0,
       leadingWidth: 40,
       titleSpacing: 0,
       title: InkWell(
@@ -1154,14 +1148,21 @@ class _ChatScreenState extends State<ChatScreen> {
           children: [
             GestureDetector(
               onTap: _openAvatarViewer,
-              child: AvatarCircle(
-                name: widget.title,
-                avatarUrl: widget.avatarUrl,
-                radius: 18,
-                backgroundColor: Colors.white24,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white.withOpacity(0.5), width: 1.5),
+                ),
+                child: AvatarCircle(
+                  name: widget.title,
+                  avatarUrl: widget.avatarUrl,
+                  radius: 18,
+                  backgroundColor: Colors.white24,
+                ),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1171,7 +1172,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     widget.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
                   ),
                   if (!widget.isGroup && widget.otherStatusMsg?.isNotEmpty == true)
                     Text(
@@ -1194,12 +1199,12 @@ class _ChatScreenState extends State<ChatScreen> {
       actions: [
         IconButton(
           tooltip: widget.isGroup ? "Appel groupe vidéo" : "Appel vidéo",
-          icon: const Icon(Icons.videocam),
+          icon: const Icon(Icons.videocam_outlined, size: 22),
           onPressed: () => _startCall("VIDEO"),
         ),
         IconButton(
           tooltip: widget.isGroup ? "Appel groupe audio" : "Appel audio",
-          icon: const Icon(Icons.call),
+          icon: const Icon(Icons.call_outlined, size: 22),
           onPressed: () => _startCall("AUDIO"),
         ),
       ],
@@ -1702,15 +1707,20 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Text(
             m.content ?? "[${m.type}]",
-            style: TextStyle(color: onTextColor),
+            style: TextStyle(
+              color: onTextColor,
+              fontSize: 15,
+              height: 1.3,
+            ),
           ),
           if (translated != null) ...[
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: mine ? Colors.white.withOpacity(0.15) : AppColors.sand.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(8),
+                color: mine ? Colors.white.withOpacity(0.1) : AppColors.sand.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: mine ? Colors.white24 : AppColors.outline),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1722,11 +1732,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       const SizedBox(width: 4),
                       Text(
                         tr(context, 'translated'),
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: onSubColor),
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: onSubColor),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     translated,
                     style: TextStyle(fontSize: 13, color: onTextColor, fontStyle: FontStyle.italic),
@@ -1752,13 +1762,13 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
           if (!isTranslating && translated == null && m.type == 'TEXT')
             Padding(
-              padding: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.only(top: 4),
               child: Text(
                 tr(context, 'translate'),
                 style: TextStyle(fontSize: 10, color: onSubColor.withOpacity(0.8), fontStyle: FontStyle.italic),
               ),
             ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           _timestampRow(m, mine, onSubColor),
         ],
       ),
@@ -1772,45 +1782,50 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _composer() {
     // ---- ÉTAT VERROUILLÉ : l'utilisateur a slidé vers le haut ----
-    // L'enregistrement continue sans maintenir le doigt. Boutons envoyer/annuler.
     if (_recordLocked) {
       return SafeArea(
         top: false,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          color: AppColors.cream,
-          child: Row(
-            children: [
-              GestureDetector(
-                onTap: () => _stopVoiceRecord(cancel: true),
-                child: CircleAvatar(
-                  backgroundColor: Colors.red.shade400,
-                  child: const Icon(Icons.delete_outline, color: Colors.white),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(24),
+              ],
+            ),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () => _stopVoiceRecord(cancel: true),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: Colors.red.shade400,
+                    child: const Icon(Icons.delete_outline, color: Colors.white, size: 18),
                   ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Row(
                     children: [
-                      const Icon(Icons.fiber_manual_record,
-                          color: Colors.red, size: 14),
+                      const Icon(Icons.fiber_manual_record, color: Colors.red, size: 14),
                       const SizedBox(width: 8),
                       Text(
                         _formatDuration(_recordDuration),
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                           color: Colors.red.shade700,
                           fontSize: 15,
                         ),
                       ),
                       const Spacer(),
-                      Icon(Icons.lock, color: Colors.red.shade400, size: 18),
+                      Icon(Icons.lock, color: Colors.red.shade400, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         tr(context, 'recording_locked'),
@@ -1819,142 +1834,162 @@ class _ChatScreenState extends State<ChatScreen> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: _uploading ? null : () => _stopVoiceRecord(),
-                child: CircleAvatar(
-                  backgroundColor: AppColors.terracotta,
-                  child: const Icon(Icons.send, color: Colors.white),
+                const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: _uploading ? null : () => _stopVoiceRecord(),
+                  child: CircleAvatar(
+                    radius: 18,
+                    backgroundColor: AppColors.terracotta,
+                    child: const Icon(Icons.send, color: Colors.white, size: 18),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
     }
 
     // ---- ÉTAT NORMAL OU ENREGISTREMENT (doigt maintenu) ----
-    // On utilise Offstage pour cacher les boutons 📎 et 📤 pendant l'enregistrement
-    // SANS modifier la structure du Row : le GestureDetector du micro reste ainsi
-    // au MÊME index dans l'arbre, ce qui préserve le geste long-press à travers
-    // le rebuild de setState (sinon onLongPressEnd ne se déclencherait jamais).
     return SafeArea(
       top: false,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Barre de prévisualisation quand on répond à un message
-          if (_replyTo != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              color: AppColors.cream,
-              child: Row(
-                children: [
-                  Container(
-                    width: 3,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.terracotta,
-                      borderRadius: BorderRadius.circular(2),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Barre de prévisualisation quand on répond à un message
+            if (_replyTo != null)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.9),
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _replyTo!.senderId == _myId
-                              ? tr(context, 'you')
-                              : (widget.memberNames[_replyTo!.senderId] ?? tr(context, 'reply_to')),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.terracotta,
-                          ),
-                        ),
-                        Text(
-                          _replyTo!.isDeleted
-                              ? tr(context, 'message_deleted')
-                              : (_replyTo!.content ??
-                                  (_replyTo!.media.isNotEmpty
-                                      ? '📎 ${_replyTo!.media.first.filename ?? tr(context, 'file')}'
-                                      : '...')),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12, color: Colors.black54),
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _replyTo = null),
-                    child: const Icon(Icons.close, size: 20, color: Colors.black54),
-                  ),
-                ],
-              ),
-            ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            color: AppColors.cream,
-            child: Row(
-              children: [
-                // Bouton pièce jointe — Offstage préserve la structure du Row
-                Offstage(
-                  offstage: _recording,
-                  child: IconButton(
-                    tooltip: tr(context, 'attach_file'),
-                    icon: _uploading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.attach_file, color: AppColors.chocolate),
-                    onPressed: _uploading ? null : _pickAndSendFile,
-                  ),
+                  ],
                 ),
-                // Champ texte OU barre d'enregistrement (même slot Expanded)
-                Expanded(
-                  child: _recording
-                      ? _recordingBar()
-                      : TextField(
-                          controller: _inputCtrl,
-                          minLines: 1,
-                          maxLines: 4,
-                          textInputAction: TextInputAction.send,
-                          onSubmitted: (_) => _send(),
-                          decoration: InputDecoration(
-                            hintText: tr(context, 'write_message'),
-                            contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 10),
-                          ),
-                        ),
-                ),
-                const SizedBox(width: 4),
-                // Bouton micro — TOUJOURS à cet index (stable pour le gesture)
-                _micButton(),
-                // Bouton envoyer — Offstage préserve la structure du Row
-                Offstage(
-                  offstage: _recording,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(width: 8),
-                      CircleAvatar(
-                        backgroundColor: AppColors.terracotta,
-                        child: IconButton(
-                          icon: const Icon(Icons.send, color: Colors.white),
-                          onPressed: _sending ? null : _send,
-                        ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 4,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppColors.terracotta,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _replyTo!.senderId == _myId
+                                ? tr(context, 'you')
+                                : (widget.memberNames[_replyTo!.senderId] ?? tr(context, 'reply_to')),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.terracotta,
+                            ),
+                          ),
+                          Text(
+                            _replyTo!.isDeleted
+                                ? tr(context, 'message_deleted')
+                                : (_replyTo!.content ??
+                                    (_replyTo!.media.isNotEmpty
+                                        ? '📎 ${_replyTo!.media.first.filename ?? tr(context, 'file')}'
+                                        : '...')),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setState(() => _replyTo = null),
+                      child: const Icon(Icons.close, size: 18, color: Colors.black45),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.chocolate.withValues(alpha: 0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: AppColors.outline.withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    Offstage(
+                      offstage: _recording,
+                      child: IconButton(
+                        tooltip: tr(context, 'attach_file'),
+                        icon: _uploading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.attach_file, color: AppColors.chocolate),
+                        onPressed: _uploading ? null : _pickAndSendFile,
+                      ),
+                    ),
+                    Expanded(
+                      child: _recording
+                          ? _recordingBar()
+                          : TextField(
+                              controller: _inputCtrl,
+                              minLines: 1,
+                              maxLines: 4,
+                              textInputAction: TextInputAction.send,
+                              onSubmitted: (_) => _send(),
+                              decoration: InputDecoration(
+                                hintText: tr(context, 'write_message'),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 10),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                    ),
+                    const SizedBox(width: 4),
+                    _micButton(),
+                    Offstage(
+                      offstage: _recording,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 8),
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: AppColors.terracotta,
+                            child: IconButton(
+                              icon: const Icon(Icons.send, color: Colors.white, size: 18),
+                              onPressed: _sending ? null : _send,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

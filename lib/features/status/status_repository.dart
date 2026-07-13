@@ -34,4 +34,10 @@ class StatusRepository {
   Future<void> delete(String statusId) async {
     await _api.delete("/api/statuses/$statusId");
   }
+
+  /// Like ou unlike un statut.
+  Future<Map<String, dynamic>> toggleLike(String statusId) async {
+    final data = await _api.post("/api/statuses/$statusId/like", {});
+    return data;
+  }
 }

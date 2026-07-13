@@ -144,36 +144,70 @@ class _CallsScreenState extends State<CallsScreen> {
     final icon = c.isOutgoing
         ? Icons.call_made
         : (c.status == "MISSED" ? Icons.call_missed : Icons.call_received);
-    final color = c.status == "MISSED" ? Colors.red : AppColors.forest;
-    return ListTile(
-      leading: c.isGroup
-          ? CircleAvatar(
-              backgroundColor: AppColors.clay,
-              child: const Icon(Icons.groups, color: Colors.white, size: 20),
-            )
-          : AvatarCircle(
-              name: c.peerName,
-              avatarUrl: c.peerAvatarUrl,
-              radius: 22,
-              backgroundColor: AppColors.clay,
-            ),
-      title: Text(c.peerName, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(
-        "${c.isGroup ? "Groupe · " : ""}${c.isOutgoing ? "Sortant" : "Entrant"} · ${_duration(c)}",
-        style: TextStyle(color: c.status == "MISSED" ? Colors.red.shade700 : Colors.black54),
+    final color = c.status == "MISSED" ? Colors.redAccent : AppColors.forest;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      trailing: Icon(icon, color: color, size: 20),
-      onTap: c.convId == null
-          ? null
-          : () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => ChatScreen(
-                    convId: c.convId!,
-                    title: c.peerName,
-                    isGroup: c.isGroup,
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: c.isGroup
+            ? CircleAvatar(
+                radius: 24,
+                backgroundColor: AppColors.terracotta.withOpacity(0.2),
+                child: const Icon(Icons.groups, color: AppColors.terracotta, size: 24),
+              )
+            : AvatarCircle(
+                name: c.peerName,
+                avatarUrl: c.peerAvatarUrl,
+                radius: 24,
+                backgroundColor: AppColors.clay,
+              ),
+        title: Text(
+          c.peerName,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            "${c.isGroup ? "Groupe · " : ""}${c.isOutgoing ? "Sortant" : "Entrant"} · ${_duration(c)}",
+            style: TextStyle(
+              color: c.status == "MISSED" ? Colors.redAccent.shade700 : Colors.black54,
+              fontSize: 13,
+            ),
+          ),
+        ),
+        trailing: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        onTap: c.convId == null
+            ? null
+            : () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ChatScreen(
+                      convId: c.convId!,
+                      title: c.peerName,
+                      isGroup: c.isGroup,
+                    ),
                   ),
                 ),
-              ),
+      ),
     );
   }
+
 }

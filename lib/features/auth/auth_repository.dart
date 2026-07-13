@@ -3,12 +3,12 @@ import 'dart:convert';
 import '../../core/api_client.dart';
 import '../../models/auth_user.dart';
 
-/// Résultat de la vérification OTP : token d'étape + numéro public attribué.
+/// Résultat de la vérification OTP : token d'étape + numéro Alanya attribué.
 class VerifyResult {
   final String setupToken;
-  final String publicNumber;
+  final String alanyaPhone;
   final bool needsSetup;
-  VerifyResult(this.setupToken, this.publicNumber, this.needsSetup);
+  VerifyResult(this.setupToken, this.alanyaPhone, this.needsSetup);
 }
 
 /// Résultat d'une authentification réussie (setup ou login).
@@ -41,26 +41,33 @@ class AuthRepository {
     final data = await _api.post("/api/auth/verify", {"email": email, "code": code});
     return VerifyResult(
       data["setupToken"] as String,
-      data["publicNumber"] as String,
+      data["alanyaPhone"] as String,
       (data["needsSetup"] as bool?) ?? true,
     );
   }
 
-  /// Étape 3 : choix du pseudo + mot de passe (avec le setupToken).
+  /// Étape 3 : choix du pseudo, nom, pays + mot de passe (avec le setupToken).
   Future<AuthSession> setup({
     required String setupToken,
     required String pseudo,
     required String password,
+    String? nom,
+    int? idPays,
   }) async {
     final data = await _api.post(
       "/api/auth/setup",
-      {"pseudo": pseudo, "password": password},
+      {
+        "pseudo": pseudo, 
+        "password": password,
+        "nom": nom,
+        "idPays": idPays,
+      },
       bearer: setupToken,
     );
     return _session(data);
   }
 
-  /// Connexion par email OU numéro public à 6 chiffres.
+  /// Connexion par email OU numéro Alanya.
   Future<AuthSession> login({required String identifier, required String password}) async {
     final data =
         await _api.post("/api/auth/login", {"identifier": identifier, "password": password});

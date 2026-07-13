@@ -27,7 +27,7 @@ class AppLocalizations {
 'portuguese': 'Portugais',
 'login': 'Connexion',
 'login_welcome': 'Content de te revoir 👋',
-'email_or_alanya': 'Email ou numéro Alanya (6 chiffres)',
+  'email_or_alanya': 'Email ou numéro Alanya (8 chiffres)',
 'password': 'Mot de passe',
 'sign_in': 'Se connecter',
 'register': 'Créer un compte',

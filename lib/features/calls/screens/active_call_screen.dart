@@ -233,110 +233,154 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.chocolate,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              if (showVideo) _remoteGrid(cc, remotes),
-              Column(
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white70),
-                      tooltip: "Fermer",
-                      onPressed: () async {
-                        if (showIncoming) {
-                          await _reject(cc);
-                        } else if (showActive) {
-                          await _hangUp(cc);
-                        } else {
-                          _popScreen();
-                        }
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  if (!showVideo)
-                    CircleAvatar(
-                      radius: 52,
-                      backgroundColor: AppColors.terracotta,
-                      child: Icon(
-                        cc.isGroupCall
-                            ? Icons.groups
-                            : (isVideo ? Icons.videocam : Icons.person),
-                        size: 52,
-                        color: Colors.white,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                AppColors.chocolate,
+                AppColors.chocolate.withBlue(100), // Darker shade of chocolate
+                const Color(0xFF2D1B10), // Very dark chocolate/black
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: Stack(
+              children: [
+                if (showVideo) _remoteGrid(cc, remotes),
+                Column(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white70),
+                        tooltip: "Fermer",
+                        onPressed: () async {
+                          if (showIncoming) {
+                            await _reject(cc);
+                          } else if (showActive) {
+                            await _hangUp(cc);
+                          } else {
+                            _popScreen();
+                          }
+                        },
                       ),
                     ),
-                  if (!showVideo) const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Text(
-                      name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+                    const SizedBox(height: 40),
+                    if (!showVideo)
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 20,
+                              spreadRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 64,
+                          backgroundColor: AppColors.terracotta,
+                          child: Icon(
+                            cc.isGroupCall
+                                ? Icons.groups
+                                : (isVideo ? Icons.videocam : Icons.person),
+                            size: 64,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(_statusText(cc), style: const TextStyle(color: Colors.white70, fontSize: 16)),
-                  if (cc.activeRole == ActiveCallRole.ongoing) ...[
-                    const SizedBox(height: 10),
-                    Text(_mediaHint(cc), style: const TextStyle(color: Colors.white54, fontSize: 13)),
-                  ],
-                  if (cc.lastError != null) ...[
-                    const SizedBox(height: 10),
+                    if (!showVideo) const SizedBox(height: 32),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 24),
                       child: Text(
-                        cc.lastError!,
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.orangeAccent, fontSize: 13),
                       ),
                     ),
-                  ],
-                  if (cc.isGroupCall && cc.activeRole == ActiveCallRole.ongoing)
-                    _participantList(cc),
-                  const Spacer(),
-                  if (showIncoming)
-                    _incomingActions(cc)
-                  else if (showActive)
-                    _activeActions(cc)
-                  else
-                    _roundBtn(
-                      icon: Icons.close,
-                      color: Colors.grey,
-                      label: "Fermer",
-                      onPressed: () => _popScreen(),
+                    const SizedBox(height: 12),
+                    Text(
+                      _statusText(cc),
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  const SizedBox(height: 40),
-                ],
-              ),
-              if (showVideo && cc.localStream != null)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  width: 100,
-                  height: 140,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: RTCVideoView(
-                      _localRenderer,
-                      mirror: true,
-                      objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                    if (cc.activeRole == ActiveCallRole.ongoing) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        _mediaHint(cc),
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                    if (cc.lastError != null) ...[
+                      const SizedBox(height: 16),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: Text(
+                          cc.lastError!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.orangeAccent,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                    if (cc.isGroupCall && cc.activeRole == ActiveCallRole.ongoing)
+                      _participantList(cc),
+                    const Spacer(),
+                    if (showIncoming)
+                      _incomingActions(cc)
+                    else if (showActive)
+                      _activeActions(cc)
+                    else
+                      _roundBtn(
+                        icon: Icons.close,
+                        color: Colors.grey.shade800,
+                        label: "Fermer",
+                        onPressed: () => _popScreen(),
+                      ),
+                    const SizedBox(height: 60),
+                  ],
+                ),
+                if (showVideo && cc.localStream != null)
+                  Positioned(
+                    top: 20,
+                    right: 20,
+                    width: 110,
+                    height: 150,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: RTCVideoView(
+                        _localRenderer,
+                        mirror: true,
+                        objectFit: RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
+                      ),
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
+
 
   Widget _remoteGrid(CallController cc, Map<String, MediaStream> remotes) {
     final ids = remotes.keys.toList();
@@ -471,23 +515,45 @@ class _ActiveCallScreenState extends State<ActiveCallScreen> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Material(
-          color: color,
-          shape: const CircleBorder(),
-          elevation: 2,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onPressed,
-            child: SizedBox(
-              width: 72,
-              height: 72,
-              child: Icon(icon, color: Colors.white, size: 32),
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: color.withOpacity(0.4),
+                blurRadius: 15,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Material(
+            color: color,
+            shape: const CircleBorder(),
+            elevation: 0,
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: onPressed,
+              child: SizedBox(
+                width: 76,
+                height: 76,
+                child: Icon(icon, color: Colors.white, size: 34),
+              ),
             ),
           ),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(color: Colors.white70)),
+        const SizedBox(height: 12),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.5,
+          ),
+        ),
       ],
     );
   }
+
 }

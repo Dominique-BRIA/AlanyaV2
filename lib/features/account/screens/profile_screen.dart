@@ -17,6 +17,7 @@ import '../../../widgets/motif_background.dart';
 import '../../auth/auth_controller.dart';
 import '../../media/media_repository.dart';
 import '../account_repository.dart';
+import 'screens/sessions_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,6 +26,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  late final TextEditingController _nomCtrl;
   late final TextEditingController _pseudoCtrl;
   late final TextEditingController _statusCtrl;
   bool _saving = false;
@@ -35,6 +37,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     final user = context.read<AuthController>().user;
+    _nomCtrl = TextEditingController(text: user?.nom ?? "");
     _pseudoCtrl = TextEditingController(text: user?.pseudo ?? "");
     _statusCtrl = TextEditingController(text: user?.statusMsg ?? "");
     _loadToken();
@@ -47,6 +50,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
+    _nomCtrl.dispose();
     _pseudoCtrl.dispose();
     _statusCtrl.dispose();
     super.dispose();
@@ -64,10 +68,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     try {
       final res = await account.updateProfile(
         pseudo: pseudo,
+        nom: _nomCtrl.text.trim(),
         statusMsg: _statusCtrl.text.trim(),
       );
       auth.applyProfile(
         pseudo: res.pseudo,
+        nom: res.nom,
         statusMsg: res.statusMsg,
         avatarUrl: res.avatarUrl,
       );
@@ -115,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final auth = context.read<AuthController>();
 
     try {
-      // Détecte le MIME à partir des bytes eux-mêmes (magic number) plutôt
+      // Détecte le MIME à partir des premiers octets du fichier (magic number) plutôt
       // que du nom de fichier. Le picker Android peut renvoyer un nom sans
       // extension ou avec une extension trompeuse selon l'appli source.
       final mime = _mimeFromBytes(bytes) ?? _mimeFromName(file.name);
@@ -129,6 +135,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final res = await account.updateProfile(avatarUrl: uploaded.url);
       auth.applyProfile(
         pseudo: res.pseudo,
+        nom: res.nom,
         statusMsg: res.statusMsg,
         avatarUrl: res.avatarUrl,
       );
@@ -192,10 +199,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: MotifBackground(
         overlayOpacity: 0.92,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const SizedBox(height: 20),
               Center(
                 child: _AvatarWithEdit(
                   pseudo: user?.pseudo,
@@ -205,58 +213,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: _pickAvatar,
                 ),
               ),
+              const SizedBox(height: 24),
+              _infoCard(user?.alanyaPhone ?? "—", user?.email ?? "—"),
+              const SizedBox(height: 32),
+              _sectionTitle(tr(context, 'personal_info')),
               const SizedBox(height: 16),
-              _infoCard(user?.publicNumber ?? "—", user?.email ?? "—"),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _pseudoCtrl,
-                decoration: InputDecoration(
-                  labelText: tr(context, 'pseudo'),
-                  prefixIcon: const Icon(Icons.person),
-                ),
+              _premiumTextField(
+                controller: _nomCtrl,
+                label: tr(context, 'full_name'),
+                icon: Icons.person_outline,
               ),
-              const SizedBox(height: 14),
-              TextField(
+              const SizedBox(height: 16),
+              _premiumTextField(
+                controller: _pseudoCtrl,
+                label: tr(context, 'pseudo'),
+                icon: Icons.alternate_email,
+              ),
+              const SizedBox(height: 16),
+              _premiumTextField(
                 controller: _statusCtrl,
                 maxLength: 255,
-                decoration: InputDecoration(
-                  labelText: tr(context, 'status_hint'),
-                  prefixIcon: const Icon(Icons.info_outline),
-                ),
-              ),
-              const SizedBox(height: 8),
-              ElevatedButton.icon(
-                onPressed: _saving ? null : _save,
-                icon: _saving
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.save),
-                label: Text(tr(context, 'save')),
+                label: tr(context, 'status_hint'),
+                icon: Icons.info_outline,
               ),
               const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _saving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.terracotta,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(tr(context, 'save'), 
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+              const SizedBox(height: 40),
+              _sectionTitle(tr(context, 'security_settings')),
+              const SizedBox(height: 16),
+              _premiumActionTile(
+                icon: Icons.security,
+                label: tr(context, 'security_sessions'),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SessionsScreen()),
+                ),
+              ),
+              const SizedBox(height: 32),
+              _sectionTitle(tr(context, 'preferences')),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppColors.sand),
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      const Icon(Icons.language, color: AppColors.forest),
-                      const SizedBox(width: 10),
+                      const Icon(Icons.language, color: AppColors.forest, size: 22),
+                      const SizedBox(width: 12),
                       Text(
                         tr(context, 'language_settings'),
                         style: const TextStyle(
-                            fontWeight: FontWeight.w700, fontSize: 15),
+                            fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.chocolate),
                       ),
                     ]),
                     const SizedBox(height: 8),
@@ -264,17 +304,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       tr(context, 'language_description'),
                       style: const TextStyle(color: Colors.black54, fontSize: 13),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
                       value: LocaleController.supported
                               .any((l) => l.code == localeCtrl.languageCode)
                           ? localeCtrl.languageCode
                           : 'fr',
                       decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.sand.withOpacity(0.3),
                         border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none),
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 8),
+                            horizontal: 12, vertical: 12),
                       ),
                       items: LocaleController.supported.map((l) {
                         return DropdownMenuItem(
@@ -289,12 +332,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              OutlinedButton.icon(
-                onPressed: () => context.read<AuthController>().logout(),
-                icon: const Icon(Icons.logout),
-                label: Text(tr(context, 'logout')),
+              const SizedBox(height: 48),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.read<AuthController>().logout(),
+                  icon: const Icon(Icons.logout, color: Colors.redAccent),
+                  label: Text(tr(context, 'logout'), 
+                      style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.w600)),
+                  style: OutlinedButton.styleFrom(
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    side: const BorderSide(color: Colors.redAccent),
+                  ),
+                ),
               ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -302,33 +355,117 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _sectionTitle(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.bold,
+        color: AppColors.chocolate,
+        letterSpacing: 1.1,
+      ),
+    );
+  }
+
+  Widget _premiumTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    int? maxLength,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLength: maxLength,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: AppColors.terracotta),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: AppColors.terracotta, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _premiumActionTile({required IconData icon, required String label, required VoidCallback onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.terracotta),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: Colors.black38),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _infoCard(String number, String email) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.sand),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(children: [
         Row(children: [
-          const Icon(Icons.tag, color: AppColors.terracotta),
-          const SizedBox(width: 10),
+          const Icon(Icons.tag, color: AppColors.terracotta, size: 20),
+          const SizedBox(width: 12),
           Text(tr(context, 'alanya_number_label'),
-              style: const TextStyle(color: Colors.black54)),
-          Text(number, style: const TextStyle(fontWeight: FontWeight.bold)),
+              style: const TextStyle(color: Colors.black54, fontSize: 14)),
+          const SizedBox(width: 8),
+          Text(number, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         ]),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Row(children: [
-          const Icon(Icons.email_outlined, color: AppColors.clay),
-          const SizedBox(width: 10),
+          const Icon(Icons.email_outlined, color: AppColors.clay, size: 20),
+          const SizedBox(width: 12),
           Expanded(
-              child: Text(email, style: const TextStyle(color: Colors.black87))),
+              child: Text(email, style: const TextStyle(color: Colors.black87, fontSize: 14))),
         ]),
       ]),
     );
   }
 }
+
 
 /// Avatar circulaire cliquable pour éditer la photo de profil.
 /// Affiche :

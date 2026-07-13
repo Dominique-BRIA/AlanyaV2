@@ -1,7 +1,7 @@
 class LastMessage {
   final String id;
   final String? content;
-  final String type;
+  final int type;
   final String senderId;
   final DateTime createdAt;
 
@@ -16,7 +16,7 @@ class LastMessage {
   factory LastMessage.fromJson(Map<String, dynamic> j) => LastMessage(
         id: j["id"] as String,
         content: j["content"] as String?,
-        type: j["type"] as String,
+        type: (j["type"] as num).toInt(),
         senderId: j["senderId"] as String,
         createdAt: DateTime.parse(j["createdAt"] as String),
       );
@@ -25,16 +25,16 @@ class LastMessage {
 class ConvMember {
   final String id;
   final String? pseudo;
-  final String publicNumber;
+  final String alanyaPhone;
 
-  ConvMember({required this.id, required this.pseudo, required this.publicNumber});
+  ConvMember({required this.id, required this.pseudo, required this.alanyaPhone});
 
-  String get displayName => pseudo ?? publicNumber;
+  String get displayName => pseudo ?? alanyaPhone;
 
   factory ConvMember.fromJson(Map<String, dynamic> j) => ConvMember(
         id: j["id"] as String,
         pseudo: j["pseudo"] as String?,
-        publicNumber: j["publicNumber"] as String,
+        alanyaPhone: j["alanyaPhone"] as String,
       );
 }
 

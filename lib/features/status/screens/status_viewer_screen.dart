@@ -5,6 +5,7 @@ import '../../../core/api_client.dart';
 import '../../../core/token_storage.dart';
 import '../../../models/status.dart';
 import '../../../widgets/auth_network_image.dart';
+import '../../../theme/app_theme.dart';
 import '../status_repository.dart';
 import 'create_status_screen.dart' show colorFromHex;
 
@@ -22,12 +23,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
   int _index = 0;
   String _baseUrl = "";
   String? _token;
+  Map<String, bool> _localLikes = {};
+  Map<String, int> _localLikeCounts = {};
 
   @override
   void initState() {
     super.initState();
     _loadConfig();
     _markViewed();
+    _initLikes();
+  }
+
+  void _initLikes() {
+    for (var s in widget.group.statuses) {
+      _localLikes[s.id] = s.isLiked;
+      _localLikeCounts[s.id] = s.likedBy;
+    }
   }
 
   Future<void> _loadConfig() async {
@@ -36,7 +47,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
     if (mounted) setState(() {});
   }
 
-  /// Construit l'URL complète d'un média de statut (avec token d'authentification).
   String _mediaUrl(String path) {
     return "$_baseUrl$path?token=${_token ?? ''}";
   }
@@ -62,6 +72,30 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
     if (_index > 0) setState(() => _index--);
   }
 
+  Future<void> _toggleLike() async {
+    final s = widget.group.statuses[_index];
+    final currentLike = _localLikes[s.id] ?? s.isLiked;
+    final currentCount = _localLikeCounts[s.id] ?? s.likedBy;
+
+    setState(() {
+      _localLikes[s.id] = !currentLike;
+      _localLikeCounts[s.id] = currentLike ? currentCount - 1 : currentCount + 1;
+    });
+
+    try {
+      final res = await context.read<StatusRepository>().toggleLike(s.id);
+      setState(() {
+        _localLikes[s.id] = res["liked"];
+        _localLikeCounts[s.id] = res["likedBy"];
+      });
+    } catch (e) {
+      setState(() {
+        _localLikes[s.id] = currentLike;
+        _localLikeCounts[s.id] = currentCount;
+      });
+    }
+  }
+
   Future<void> _delete() async {
     final s = widget.group.statuses[_index];
     final repo = context.read<StatusRepository>();
@@ -70,18 +104,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text("Supprimer ce statut ?"),
+        content: const Text("Cette action est irréversible."),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Annuler")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Supprimer")),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Supprimer", style: TextStyle(color: Colors.red))),
         ],
       ),
     );
     if (ok != true) return;
     try {
       await repo.delete(s.id);
-    } catch (_) {
-      // ignoré
-    }
+    } catch (_) {}
     nav.pop(true);
   }
 
@@ -89,6 +122,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
   Widget build(BuildContext context) {
     final s = widget.group.statuses[_index];
     final bg = s.bgColor != null ? colorFromHex(s.bgColor!) : Colors.black;
+    final isLiked = _localLikes[s.id] ?? s.isLiked;
+    final likeCount = _localLikeCounts[s.id] ?? s.likedBy;
+
     return Scaffold(
       backgroundColor: bg,
       body: GestureDetector(
@@ -100,128 +136,196 @@ class _StatusViewerScreenState extends State<StatusViewerScreen> {
             _next();
           }
         },
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Barres de progression par statut.
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                child: Row(
-                  children: List.generate(widget.group.statuses.length, (i) {
-                    return Expanded(
-                      child: Container(
-                        height: 3,
-                        margin: const EdgeInsets.symmetric(horizontal: 2),
-                        decoration: BoxDecoration(
-                          color: i <= _index ? Colors.white : Colors.white38,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    );
-                  }),
+        child: Stack(
+          children: [
+            // Contenu Principal
+            Positioned.fill(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: _buildContent(s),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundColor: Colors.white24,
-                      child: Text(
-                        widget.group.displayName[0].toUpperCase(),
-                        style: const TextStyle(color: Colors.white),
-                      ),
+            ),
+            
+            // Overlay UI
+            SafeArea(
+              child: Column(
+                children: [
+                  // Barre de progression Premium
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    child: Row(
+                      children: List.generate(widget.group.statuses.length, (i) {
+                        return Expanded(
+                          child: Container(
+                            height: 4,
+                            margin: const EdgeInsets.symmetric(horizontal: 2),
+                            decoration: BoxDecoration(
+                              color: i <= _index ? Colors.white : Colors.white.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        );
+                      }),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  ),
+                  
+                  // Header Utilisateur
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+                          ),
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.white24,
+                            child: Text(
+                              widget.group.displayName[0].toUpperCase(),
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                widget.group.displayName,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                _ago(s.createdAt),
+                                style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (widget.isMine)
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.white),
+                            onPressed: _delete,
+                          ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  
+                  // Zone d'interaction bas de page (Glassmorphism)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 32),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.white.withOpacity(0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(widget.group.displayName,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                          Text(_ago(s.createdAt),
-                              style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          GestureDetector(
+                            onTap: _toggleLike,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  isLiked ? Icons.favorite : Icons.favorite_border,
+                                  color: isLiked ? Colors.redAccent : Colors.white,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "$likeCount",
+                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          if (widget.isMine) ...[
+                            const SizedBox(width: 20),
+                            Row(
+                              children: [
+                                const Icon(Icons.visibility, color: Colors.white70, size: 18),
+                                const SizedBox(width: 6),
+                                Text(
+                                  "${s.viewsCount} vues",
+                                  style: const TextStyle(color: Colors.white70, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                    if (widget.isMine)
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline, color: Colors.white),
-                        onPressed: _delete,
-                      ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(28),
-                    child: s.type == "TEXT"
-                        ? Text(
-                            s.text ?? "",
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          )
-                        : s.type == "IMAGE" && s.mediaUrl != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: _token == null
-                                    ? const CircularProgressIndicator(color: Colors.white)
-                                    : AuthNetworkImage(
-                                        url: "$_baseUrl${s.mediaUrl}",
-                                        token: _token,
-                                        fit: BoxFit.contain,
-                                      ),
-                              )
-                            : s.type == "VIDEO" && s.mediaUrl != null
-                                ? _videoPlaceholder(s.mediaUrl!)
-                                : const Text(
-                                    "[Média non pris en charge]",
-                                    style: TextStyle(color: Colors.white70),
-                                  ),
                   ),
-                ),
+                ],
               ),
-              if (widget.isMine)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.visibility, color: Colors.white70, size: 18),
-                      const SizedBox(width: 6),
-                      Text("${s.viewsCount} vue(s)",
-                          style: const TextStyle(color: Colors.white70)),
-                    ],
-                  ),
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// Placeholder pour la vidéo — l'app ouvre le lecteur système au tap.
-  /// (La lecture vidéo intégrée nécessiterait une dépendance supplémentaire ;
-  /// pour l'instant on propose un bouton de téléchargement/ouverture.)
+  Widget _buildContent(Status s) {
+    if (s.type == "TEXT") {
+      return Text(
+        s.text ?? "",
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          height: 1.2,
+        ),
+      );
+    } else if (s.type == "IMAGE" && s.mediaUrl != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: _token == null
+            ? const CircularProgressIndicator(color: Colors.white)
+            : AuthNetworkImage(
+                url: "$_baseUrl${s.mediaUrl}",
+                token: _token,
+                fit: BoxFit.contain,
+              ),
+      );
+    } else if (s.type == "VIDEO" && s.mediaUrl != null) {
+      return _videoPlaceholder(s.mediaUrl!);
+    } else {
+      return const Text(
+        "[Média non disponible]",
+        style: TextStyle(color: Colors.white70),
+      );
+    }
+  }
+
   Widget _videoPlaceholder(String mediaUrl) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        const Icon(Icons.play_circle_fill, size: 72, color: Colors.white70),
-        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white10,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(Icons.play_circle_fill, size: 80, color: Colors.white70),
+        ),
+        const SizedBox(height: 16),
         const Text(
           "Vidéo",
-          style: TextStyle(color: Colors.white70, fontSize: 16),
+          style: TextStyle(color: Colors.white70, fontSize: 18, fontWeight: FontWeight.w500),
         ),
       ],
     );

@@ -60,13 +60,19 @@ class _AvatarViewerScreenState extends State<AvatarViewerScreen> {
       backgroundColor: Colors.black.withOpacity(bgOpacity),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.black.withOpacity(bgOpacity * 0.5),
+        backgroundColor: Colors.black.withOpacity(bgOpacity * 0.4),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           widget.name,
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
+          style: const TextStyle(
+            color: Colors.white, 
+            fontSize: 18, 
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
+        centerTitle: true,
       ),
       body: GestureDetector(
         onVerticalDragUpdate: (d) => setState(() => _dragOffset += d.delta.dy),
@@ -91,19 +97,26 @@ class _AvatarViewerScreenState extends State<AvatarViewerScreen> {
                     ),
                   )
                 : Container(
-                    width: 240,
-                    height: 240,
-                    decoration: const BoxDecoration(
+                    width: 280,
+                    height: 280,
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Color(0xFFCB6E45), // AppColors.terracotta hex
+                      color: AppColors.terracotta,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.terracotta.withOpacity(0.3),
+                          blurRadius: 40,
+                          spreadRadius: 5,
+                        ),
+                      ],
                     ),
                     child: Center(
                       child: Text(
                         initial,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 120,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 140,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),

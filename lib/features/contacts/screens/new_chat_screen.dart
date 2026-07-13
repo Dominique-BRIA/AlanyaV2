@@ -114,37 +114,47 @@ class _NewChatScreenState extends State<NewChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: backAppBar(context, "Ajouter un contact"),
+      backgroundColor: AppColors.sand,
+      appBar: AppBar(
+        backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.chocolate,
+        elevation: 0,
+        title: Text(
+          "Ajouter un contact",
+          style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- Avatar placeholder ---
               Center(
-                child: CircleAvatar(
-                  radius: 44,
-                  backgroundColor: AppColors.fabPrimary,
-                  child: const Icon(Icons.person_add, size: 40, color: Colors.white),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.terracotta.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person_add_rounded, size: 64, color: AppColors.terracotta),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
-              // --- Champ nom ---
               TextField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.words,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: "Nom du contact",
                   hintText: "Ex. Marie, Papa, Collègue…",
-                  prefixIcon: Icon(Icons.person_outline),
+                  prefixIcon: const Icon(Icons.person_outline, color: AppColors.terracotta),
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
-              // --- Champ numéro Alanya ---
               TextField(
                 controller: _numberCtrl,
                 keyboardType: TextInputType.number,
@@ -153,7 +163,7 @@ class _NewChatScreenState extends State<NewChatScreen> {
                 decoration: InputDecoration(
                   labelText: "Numéro Alanya",
                   hintText: "6 ou 8 chiffres",
-                  prefixIcon: const Icon(Icons.tag),
+                  prefixIcon: const Icon(Icons.tag, color: AppColors.terracotta),
                   counterText: "",
                   errorText: _numberError,
                 ),
@@ -162,17 +172,16 @@ class _NewChatScreenState extends State<NewChatScreen> {
                 },
                 onSubmitted: (_) => _save(),
               ),
-              const SizedBox(height: 8),
-              const Text(
-                "Le numéro Alanya est un identifiant public à 6 chiffres "
-                "que chaque utilisateur reçoit à l'inscription.",
-                style: TextStyle(fontSize: 12, color: Colors.black54),
+              const SizedBox(height: 12),
+              Text(
+                "Le numéro Alanya est l'identifiant public unique de l'utilisateur.",
+                style: theme.textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
 
-              // --- Bouton Enregistrer ---
               SizedBox(
-                height: 52,
+                height: 56,
                 child: ElevatedButton.icon(
                   onPressed: _saving ? null : _save,
                   icon: _saving
@@ -181,8 +190,8 @@ class _NewChatScreenState extends State<NewChatScreen> {
                           height: 20,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
-                      : const Icon(Icons.save_outlined),
-                  label: Text(_saving ? "Enregistrement…" : "Enregistrer"),
+                      : const Icon(Icons.save_rounded),
+                  label: Text(_saving ? "Enregistrement…" : "Enregistrer le contact", style: const TextStyle(fontSize: 16)),
                 ),
               ),
             ],

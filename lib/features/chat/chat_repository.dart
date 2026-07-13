@@ -13,13 +13,13 @@ class ChatRepository {
         .toList();
   }
 
-  /// Crée (ou récupère) une conversation directe avec un utilisateur via son numéro.
-  Future<String> createDirect(String publicNumber) async {
-    final data = await _api.post("/api/conversations", {"publicNumber": publicNumber});
+  /// Crée (ou récupère) une conversation directe avec un utilisateur via son numéro Alanya.
+  Future<String> createDirect(String alanyaPhone) async {
+    final data = await _api.post("/api/conversations", {"alanyaPhone": alanyaPhone});
     return data["id"] as String;
   }
 
-  /// Crée une conversation de groupe avec un nom et les numéros publics des membres.
+  /// Crée une conversation de groupe avec un nom et les numéros Alanya des membres.
   Future<String> createGroup(String name, List<String> memberNumbers) async {
     final data = await _api.post("/api/conversations", {
       "name": name,
