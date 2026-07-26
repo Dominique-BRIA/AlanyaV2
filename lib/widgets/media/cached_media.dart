@@ -218,9 +218,9 @@ class _CachedMediaState extends State<CachedMedia> {
         Container(
           width: widget.width,
           height: widget.height ?? 200,
-          color: AlanyaColors.sand,
+          color: themed(context, light: AlanyaColors.sand, dark: AlanyaColors.nuit3),
           alignment: Alignment.center,
-          child: Icon(Icons.broken_image, color: AlanyaColors.grey400),
+          child: Icon(Icons.broken_image, color: themed(context, light: AlanyaColors.grey400, dark: AlanyaColors.craie2)),
         );
   }
 
@@ -230,15 +230,15 @@ class _CachedMediaState extends State<CachedMedia> {
       child: Container(
         width: widget.width,
         height: widget.height ?? 200,
-        color: AlanyaColors.sand,
+        color: themed(context, light: AlanyaColors.sand, dark: AlanyaColors.nuit3),
         alignment: Alignment.center,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.download_rounded, color: AlanyaColors.terracotta, size: 30),
+            Icon(Icons.download_rounded, color: themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit), size: 30),
             const SizedBox(height: 4),
             Text('Toucher pour télécharger',
-                style: TextStyle(fontSize: 11, color: AlanyaColors.grey500)),
+                style: TextStyle(fontSize: 11, color: themed(context, light: AlanyaColors.grey500, dark: AlanyaColors.craie2))),
           ],
         ),
       ),

@@ -142,8 +142,8 @@ class _DocumentBubbleState extends State<DocumentBubble> {
     final color = MediaHelper.colorForType(type);
     final ext = MediaHelper.extension(widget.fileName).toUpperCase().replaceAll('.', '');
     final size = MediaHelper.formatSize(widget.fileSize);
-    final onText = widget.isMe ? Colors.white : AlanyaColors.ink;
-    final onSub = widget.isMe ? Colors.white70 : Colors.black45;
+    final onText = widget.isMe ? Colors.white : themed(context, light: AlanyaColors.ink, dark: AlanyaColors.craie);
+    final onSub = widget.isMe ? Colors.white70 : themed(context, light: Colors.black45, dark: AlanyaColors.craie2);
 
     return GestureDetector(
       onTap: widget.onTap ?? _openWithExternalApp,
@@ -197,7 +197,7 @@ class _DocumentBubbleState extends State<DocumentBubble> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AlanyaColors.grey200, width: 0.5),
+            border: Border.all(color: themed(context, light: AlanyaColors.grey200, dark: AlanyaColors.ligne), width: 0.5),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -214,11 +214,11 @@ class _DocumentBubbleState extends State<DocumentBubble> {
     return Container(
       width: 240, padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: widget.isMe ? Colors.white.withValues(alpha: 0.08) : AlanyaColors.grey100,
+        color: widget.isMe ? Colors.white.withValues(alpha: 0.08) : themed(context, light: AlanyaColors.grey100, dark: AlanyaColors.nuit),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(children: [
-        const SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 2, color: AlanyaColors.terracotta)),
+        SizedBox(width: 32, height: 32, child: CircularProgressIndicator(strokeWidth: 2, color: themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit))),
         const SizedBox(height: 8),
         Text(widget.fileName, maxLines: 1, overflow: TextOverflow.ellipsis,
             style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: onText)),
@@ -257,7 +257,7 @@ class _DocumentBubbleState extends State<DocumentBubble> {
         ]),
       ),
       const SizedBox(width: 8),
-      Icon(Icons.file_download_outlined, color: widget.isMe ? Colors.white60 : AlanyaColors.grey500, size: 22),
+      Icon(Icons.file_download_outlined, color: widget.isMe ? Colors.white60 : themed(context, light: AlanyaColors.grey500, dark: AlanyaColors.craie2), size: 22),
     ]);
   }
 

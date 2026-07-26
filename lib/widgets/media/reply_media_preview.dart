@@ -69,8 +69,9 @@ class _ReplyMediaPreviewState extends State<ReplyMediaPreview> {
     final type = hasMedia
         ? MediaHelper.detectType(widget.replyToMimeType, widget.replyToFileName)
         : null;
-    final barColor = widget.isMe ? Colors.white70 : AlanyaColors.terracotta;
-    final onSub = widget.isMe ? Colors.white60 : Colors.black54;
+    final barColor = widget.isMe ? Colors.white70 : themed(context,
+        light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit);
+    final onSub = widget.isMe ? Colors.white60 : themed(context, light: Colors.black54, dark: AlanyaColors.craie2);
 
     return GestureDetector(
       onTap: widget.onTap,
@@ -80,7 +81,9 @@ class _ReplyMediaPreviewState extends State<ReplyMediaPreview> {
         decoration: BoxDecoration(
           color: widget.isMe
               ? Colors.white.withValues(alpha: 0.1)
-              : AlanyaColors.sand.withValues(alpha: 0.5),
+              : themed(context,
+                  light: AlanyaColors.sand.withValues(alpha: 0.5),
+                  dark: AlanyaColors.nuit.withValues(alpha: 0.40)),
           borderRadius: BorderRadius.circular(6),
           border: Border(
             left: BorderSide(color: barColor, width: 3),

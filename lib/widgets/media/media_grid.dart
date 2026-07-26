@@ -283,8 +283,14 @@ class _MediaGridState extends State<MediaGrid> {
 
   Widget _placeholder(AlanyaMediaType type) {
     return Container(
-      color: widget.isMe ? AlanyaColors.terracotta.withValues(alpha: 0.15) : AlanyaColors.grey200,
-      child: Center(child: Icon(MediaHelper.iconForType(type), color: AlanyaColors.grey400, size: 28)),
+      color: widget.isMe
+          // En Nuit la bulle envoyee est indigo : une teinte terre cuite
+          // par-dessus vire au boueux. Un voile clair fait le meme travail.
+          ? themed(context,
+              light: AlanyaColors.terracotta.withValues(alpha: 0.15),
+              dark: Colors.white.withValues(alpha: 0.08))
+          : themed(context, light: AlanyaColors.grey200, dark: AlanyaColors.nuit3),
+      child: Center(child: Icon(MediaHelper.iconForType(type), color: themed(context, light: AlanyaColors.grey400, dark: AlanyaColors.craie2), size: 28)),
     );
   }
 }

@@ -54,14 +54,14 @@ class ImageBubble extends StatelessWidget {
                 errorWidget: Container(
                   width: width,
                   height: 160,
-                  color: AlanyaColors.sand,
+                  color: themed(context, light: AlanyaColors.sand, dark: AlanyaColors.nuit3),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.broken_image, color: AlanyaColors.grey400, size: 36),
+                      Icon(Icons.broken_image, color: themed(context, light: AlanyaColors.grey400, dark: AlanyaColors.craie2), size: 36),
                       const SizedBox(height: 4),
                       Text('Image indisponible',
-                          style: TextStyle(fontSize: 12, color: AlanyaColors.grey500)),
+                          style: TextStyle(fontSize: 12, color: themed(context, light: AlanyaColors.grey500, dark: AlanyaColors.craie2))),
                     ],
                   ),
                 ),

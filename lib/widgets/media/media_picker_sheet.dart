@@ -240,8 +240,8 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 0.65,
       ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: themed(context, light: Colors.white, dark: AlanyaColors.nuit2),
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
@@ -252,7 +252,7 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
             margin: const EdgeInsets.only(top: 12, bottom: 8),
             width: 40, height: 4,
             decoration: BoxDecoration(
-              color: AlanyaColors.grey300,
+              color: themed(context, light: AlanyaColors.grey300, dark: AlanyaColors.craie2),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -266,7 +266,7 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
                 _optionButton(
                   icon: Icons.photo_library,
                   label: "Galerie",
-                  color: AlanyaColors.forest,
+                  color: themed(context, light: AlanyaColors.forest, dark: AlanyaColors.indigoLight),
                   onTap: _pickFullGallery,
                 ),
                 _optionButton(
@@ -309,7 +309,7 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
-                        color: AlanyaColors.terracotta,
+                        color: themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
@@ -329,16 +329,16 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
           // Galerie récente
           Expanded(
             child: _loadingGallery
-                ? const Center(child: CircularProgressIndicator(color: AlanyaColors.terracotta))
+                ? Center(child: CircularProgressIndicator(color: themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit)))
                 : _permissionDenied
                     ? Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.folder_off, size: 48, color: AlanyaColors.grey400),
+                            Icon(Icons.folder_off, size: 48, color: themed(context, light: AlanyaColors.grey400, dark: AlanyaColors.craie2)),
                             const SizedBox(height: 12),
                             Text("Accès aux fichiers refusé",
-                                style: TextStyle(color: AlanyaColors.grey500, fontSize: 14)),
+                                style: TextStyle(color: themed(context, light: AlanyaColors.grey500, dark: AlanyaColors.craie2), fontSize: 14)),
                             const SizedBox(height: 8),
                             TextButton(
                               onPressed: () => PhotoManager.openSetting(),
@@ -349,7 +349,7 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
                       )
                     : _recentMedia.isEmpty
                         ? Center(child: Text("Aucun média récent",
-                            style: TextStyle(color: AlanyaColors.grey400)))
+                            style: TextStyle(color: themed(context, light: AlanyaColors.grey400, dark: AlanyaColors.craie2))))
                         : _buildGalleryGrid(),
           ),
         ],
@@ -407,18 +407,18 @@ class _MediaPickerSheetState extends State<MediaPickerSheet> {
                 future: asset.thumbnailDataWithSize(const ThumbnailSize(200, 200)),
                 builder: (ctx, snap) {
                   if (!snap.hasData || snap.data == null) {
-                    return Container(color: AlanyaColors.grey200);
+                    return Container(color: themed(context, light: AlanyaColors.grey200, dark: AlanyaColors.nuit3));
                   }
                   return Image.memory(snap.data!, fit: BoxFit.cover);
                 },
               ),
-              if (selected) Container(color: AlanyaColors.terracotta.withValues(alpha: 0.3)),
+              if (selected) Container(color: themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit).withValues(alpha: 0.3)),
               Positioned(
                 top: 4, right: 4,
                 child: Container(
                   width: 22, height: 22,
                   decoration: BoxDecoration(
-                    color: selected ? AlanyaColors.terracotta : Colors.black.withValues(alpha: 0.3),
+                    color: selected ? themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit) : Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 1.5),
                   ),

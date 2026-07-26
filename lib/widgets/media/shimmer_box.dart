@@ -35,8 +35,9 @@ class _ShimmerBoxState extends State<ShimmerBox>
 
   @override
   Widget build(BuildContext context) {
-    const base = AlanyaColors.sand;
-    const highlight = Color(0xFFF6F1EA);
+    final base = themed(context, light: AlanyaColors.sand, dark: AlanyaColors.nuit3);
+    final highlight = themed(context,
+        light: const Color(0xFFF6F1EA), dark: const Color(0xFF30305E));
     return AnimatedBuilder(
       animation: _c,
       builder: (_, __) {
@@ -48,7 +49,7 @@ class _ShimmerBoxState extends State<ShimmerBox>
             gradient: LinearGradient(
               begin: Alignment(-1.0 - 2 * (1 - t), 0),
               end: Alignment(1.0 + 2 * t, 0),
-              colors: const [base, highlight, base],
+              colors: [base, highlight, base],
               stops: const [0.35, 0.5, 0.65],
             ),
           ),
@@ -58,8 +59,8 @@ class _ShimmerBoxState extends State<ShimmerBox>
                   value: widget.progress!.clamp(0.0, 1.0),
                   minHeight: 3,
                   backgroundColor: Colors.white24,
-                  valueColor: const AlwaysStoppedAnimation(
-                    AlanyaColors.terracotta,
+                  valueColor: AlwaysStoppedAnimation(
+                    themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit),
                   ),
                 )
               : null,

@@ -34,7 +34,7 @@ class LinkBubble extends StatelessWidget {
           border: Border.all(
             color: isMe
                 ? Colors.white.withValues(alpha: 0.15)
-                : AlanyaColors.grey200,
+                : themed(context, light: AlanyaColors.grey200, dark: AlanyaColors.ligne),
             width: 0.5,
           ),
         ),
@@ -46,7 +46,7 @@ class LinkBubble extends StatelessWidget {
           cache: const Duration(hours: 1),
           backgroundColor: isMe
               ? Colors.white.withValues(alpha: 0.06)
-              : Colors.white,
+              : themed(context, light: Colors.white, dark: AlanyaColors.nuit3),
           borderRadius: 10,
           removeElevation: true,
           bodyMaxLines: 2,
@@ -54,17 +54,17 @@ class LinkBubble extends StatelessWidget {
           titleStyle: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: isMe ? Colors.white : AlanyaColors.ink,
+            color: isMe ? Colors.white : themed(context, light: AlanyaColors.ink, dark: AlanyaColors.craie),
           ),
           bodyStyle: TextStyle(
             fontSize: 12,
-            color: isMe ? Colors.white60 : Colors.black54,
+            color: isMe ? Colors.white60 : themed(context, light: Colors.black54, dark: AlanyaColors.craie2),
           ),
           errorWidget: Container(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Icon(Icons.link, size: 18, color: isMe ? Colors.white60 : AlanyaColors.grey500),
+                Icon(Icons.link, size: 18, color: isMe ? Colors.white60 : themed(context, light: AlanyaColors.grey500, dark: AlanyaColors.craie2)),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
@@ -73,7 +73,7 @@ class LinkBubble extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 12,
-                      color: isMe ? Colors.white60 : AlanyaColors.terracotta,
+                      color: isMe ? Colors.white60 : themed(context, light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit),
                     ),
                   ),
                 ),

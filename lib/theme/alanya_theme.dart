@@ -43,6 +43,14 @@ class AlanyaColors {
   static const Color nuit3       = Color(0xFF1E1E3D); // surface élevée
   static const Color indigo      = Color(0xFF3B3B7A); // accent indigo
   static const Color indigoLight = Color(0xFF7C7CD8);
+  // Bulle envoyee : indigo remonte d'environ 12 % en clarte.
+  // Pose sur le fond nuit, #3B3B7A tient tres bien (en-tetes, filtre actif).
+  // Mais bulle contre bulle, l'ecart entre #3B3B7A et nuit3 ne fait que
+  // 1,60:1 — trop peu pour distinguer envoye et recu d'un coup d'oeil en
+  // plein soleil. Ce jeton porte l'ecart a 2,07:1 sans quitter la famille,
+  // et le blanc dessus reste a 7,7:1.
+  // Pour revenir a la valeur exacte de la charte : remplacer par `indigo`.
+  static const Color bulleEnvoyee = Color(0xFF4A4A96);
   static const Color terracottaNuit      = Color(0xFFC56A42); // accent terre cuite (nuit)
   static const Color terracottaNuitLight = Color(0xFFE29A74);
   static const Color braise      = Color(0xFFA33F2E); // rouge braise (destructif/raccrocher)

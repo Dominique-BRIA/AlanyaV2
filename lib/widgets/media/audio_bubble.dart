@@ -35,8 +35,9 @@ class AudioBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onSub = isMe ? Colors.white70 : Colors.black45;
-    final accent = isMe ? Colors.white : AlanyaColors.terracotta;
+    final onSub = isMe ? Colors.white70 : themed(context, light: Colors.black45, dark: AlanyaColors.craie2);
+    final accent = isMe ? Colors.white : themed(context,
+        light: AlanyaColors.terracotta, dark: AlanyaColors.terracottaNuit);
     final totalDuration = duration != null ? Duration(milliseconds: duration!) : null;
     final secs = duration != null ? (duration! ~/ 1000) : null;
 
